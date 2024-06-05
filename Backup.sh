@@ -1,15 +1,21 @@
 #!/bin/bash
 
 function usage {
-    echo "Usage: ./$(basename $0) -g DEVICE_TYPE[laptop/phone/desktop] -t BACKUP_TYPE[daily/weekly/monthly] -s[Parent_Of_Directories_To_Sync] -d[Destination_Disk_Location]"
+    echo "Usage: ./$(basename $0) [OPTION...]
+    -g    type of device to backup [laptop/phone/desktop]
+    -t    type of backup to perform [daily/weekly/monthly]
+    -s    parent folder/directory to sync. All the child folders/directories would be synched
+    -d    destination backup folder/directory. All backups would be placed inside this in a structure
+    -f    number of backups to retian before auto-deletion
+    -h    help"
     exit 1
 }
 
-while getopts ':t:s:d:g:' opt; 
+while getopts ':t:s:d:g:f:h' opt;
 do
     case $opt in
         t) 
-            TYPE=$OPTARG
+            BACK_TYPE=$OPTARG
             ;;
         s)
             HOME_DIR=$OPTARG
@@ -20,6 +26,12 @@ do
         g)
             DEVICE_TYPE=$OPTARG
             ;;
+        f)
+            RETAIN=$OPTARG
+            ;;
+        h)
+            usage $0
+            ;;
         \?) 
             echo "Invalid option: -$OPTARG" >&2
             usage $0
@@ -29,7 +41,7 @@ done
 shift $((OPTIND-1))
 
 ALLOWED_DEVICE_TYPE=("laptop" "phone" "desktop")
-if [[ -z $DEVICE_TYPE ]] || [[ -z $TYPE ]] || [[ -z $HOME_DIR ]] || [[ -z $DEST_DIR ]]; then
+if [[ -z $DEVICE_TYPE ]] || [[ -z $BACK_TYPE ]] || [[ -z $HOME_DIR ]] || [[ -z $DEST_DIR ]]; then
     echo "Required arguments not passed" >&2
     usage $0
 fi
@@ -40,8 +52,13 @@ if ! [[ $(echo ${ALLOWED_DEVICE_TYPE[@]} | fgrep -w $DEVICE_TYPE) ]]; then
 fi
 
 ALLOWED_BACKUP_TYPES=("daily" "weekly" "monthly")
-if ! [[ $(echo ${ALLOWED_BACKUP_TYPES[@]} | fgrep -w $TYPE) ]]; then
+if ! [[ $(echo ${ALLOWED_BACKUP_TYPES[@]} | fgrep -w $BACK_TYPE) ]]; then
     echo "Incorrect BACKUP_TYPE passed" >&2
+    usage $0
+fi
+
+if ! [[ -z $RETAIN ]] && ! [[ $RETAIN =~ ^[0-9]+$ ]]; then
+    echo "Incorrect FREQUENCY passed. It should be a number." >&2
     usage $0
 fi
 
@@ -50,13 +67,23 @@ echo "Destination directory is: $DEST_DIR"
 
 START="$(date +%s)"
 
-echo "Running Backup script for $TYPE at $(date)"
+echo "Running Backup script for $BACK_TYPE at $(date)"
 echo ""
 
 ################################################
-############# Regex for Folders ################
+################# CONSTANTS ####################
 ################################################
 REGEX_FOLDER_DATE="[0-9]{4}-[0-9]{2}-?[0-9]{0,2}"
+
+if [[ -z $RETAIN ]]; then
+    if [[ $BACK_TYPE == "daily" ]]; then
+        RETAIN=7
+    elif [[ $BACK_TYPE == "weekly" ]]; then
+        RETAIN=4
+    elif [[ $BACK_TYPE == "monthly" ]]; then
+        RETAIN=5
+    fi
+fi
 
 ################################################
 ########### Pre-Checks starts here #############
@@ -99,13 +126,13 @@ echo ""
 
 BACKUP_TYPE_DIR=""
 BACKUP_TYPE_DIR_NAME=""
-if [[ $TYPE == "daily" ]]; then
+if [[ $BACK_TYPE == "daily" ]]; then
     BACKUP_TYPE_DIR="Daily"
     BACKUP_TYPE_DIR_NAME="$(date +%Y-%m-%d)"
-elif [[ $TYPE == "weekly" ]]; then
+elif [[ $BACK_TYPE == "weekly" ]]; then
     BACKUP_TYPE_DIR="Weekly"
     BACKUP_TYPE_DIR_NAME="$(date +%Y-%U)"
-elif [[ $TYPE == "monthly" ]]; then
+elif [[ $BACK_TYPE == "monthly" ]]; then
     BACKUP_TYPE_DIR="Monthly"
     BACKUP_TYPE_DIR_NAME="$(date +%Y-%m)"
 fi
@@ -139,15 +166,7 @@ echo ""
 echo "Starting with old backup deletion"
 echo ""
 
-if [[ $TYPE == "daily" ]]; then
-    RETAIN=7
-elif [[ $TYPE == "weekly" ]]; then
-    RETAIN=4
-elif [[ $TYPE == "monthly" ]]; then
-    RETAIN=5
-fi
-
-echo "Retain threshold for $TYPE is $RETAIN"
+echo "Retain threshold for $BACK_TYPE is $RETAIN"
 echo ""
 
 BACKUP_COUNT=$(find "$BACKUP_MAIN_DIR" -mindepth 1 -maxdepth 1 -type d 2> /dev/null | grep -Eiw $REGEX_FOLDER_DATE | wc -l)
@@ -171,6 +190,7 @@ else
 fi
 
 DURATION=$[ $(date +%s) - ${START}]
+echo ""
 echo "Time taken to run the script in seconds : $DURATION s"
 echo ""
 echo "Backup script completed"
