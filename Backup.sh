@@ -40,12 +40,15 @@ do
 done
 shift $((OPTIND-1))
 
-ALLOWED_DEVICE_TYPE=("laptop" "phone" "desktop")
+################################################
+############## Required Argument ###############
+################################################
 if [[ -z $DEVICE_TYPE ]] || [[ -z $BACK_TYPE ]] || [[ -z $HOME_DIR ]] || [[ -z $DEST_DIR ]]; then
     echo "Required arguments not passed" >&2
     usage $0
 fi
 
+ALLOWED_DEVICE_TYPE=("laptop" "phone" "desktop")
 if ! [[ $(echo ${ALLOWED_DEVICE_TYPE[@]} | fgrep -w $DEVICE_TYPE) ]]; then
     echo "Incorrect DEVICE_TYPE passed" >&2
     usage $0
