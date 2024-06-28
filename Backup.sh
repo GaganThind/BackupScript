@@ -189,7 +189,6 @@ if [[ $BACKUP_COUNT -gt $RETAIN ]]; then
     done
 else 
     echo "No $DEVICE_TYPE backup to be deleted"
-    echo ""
 fi
 
 DURATION=$[ $(date +%s) - ${START}]
