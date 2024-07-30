@@ -7,11 +7,12 @@ function usage {
     -s    parent folder/directory to sync. All the child folders/directories would be synched
     -d    destination backup folder/directory. All backups would be placed inside this in a structure
     -f    number of backups to retian before auto-deletion
+    -e    exclude folders to backup [comma seperated list]
     -h    help"
     exit 1
 }
 
-while getopts ':t:s:d:g:f:h' opt;
+while getopts ':t:s:d:g:f:e:h' opt;
 do
     case $opt in
         t) 
@@ -28,6 +29,9 @@ do
             ;;
         f)
             RETAIN=$OPTARG
+            ;;
+        e)
+            EXCLUDE_FOLDERS=$OPTARG
             ;;
         h)
             usage $0
@@ -87,6 +91,13 @@ if [[ -z $RETAIN ]]; then
         RETAIN=5
     fi
 fi
+
+FOLDERS_EXCLUDE=()
+IFS=',' read -r -a EXCLUDE_ARRAY <<< "$EXCLUDE_FOLDERS"
+for element in "${EXCLUDE_ARRAY[@]}"
+do
+    FOLDERS_EXCLUDE+=( --exclude="$element" )
+done
 
 ################################################
 ########### Pre-Checks starts here #############
@@ -153,7 +164,7 @@ echo ""
 echo "Starting the backup of $DEVICE_TYPE"
 echo ""
 
-rsync -aAX --delete --exclude '*.Trash-1000' "$SOURCE_DISK_LOCATION" "$DEST_DEVICE"
+rsync -aAX --delete --delete-excluded "${FOLDERS_EXCLUDE[@]}" "$SOURCE_DISK_LOCATION" "$DEST_DEVICE"
 
 echo "Backup completed"
 echo ""
