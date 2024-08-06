@@ -1,5 +1,10 @@
 **Usage:**
 ```
+./DeviceBackup.sh [OPTION...]
+    -t    type of backup to perform [daily/weekly/monthly]
+    -h    help
+```
+```
 ./Backup.sh [OPTION...]
     -g    type of device to backup [laptop/phone/desktop]
     -t    type of backup to perform [daily/weekly/monthly]
@@ -7,6 +12,12 @@
     -d    destination backup folder/directory. All backups would be placed inside this in a structure
     -f    number of backups to retain before auto-deletion
     -e    exclude folders to backup [comma seperated list]
+    -h    help
+```
+```
+./SyncHDs.sh [OPTION...]
+    -s    Source Hard Disk
+    -d    Destination Hard Disk
     -h    help
 ```
 
