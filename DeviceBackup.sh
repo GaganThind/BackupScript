@@ -48,10 +48,11 @@ echo "DeviceBackup script - started at $(date)"
 echo ""
 
 # Copy Laptop and Phone data to backup directory except photos
-SRC_LAPTOP_HOME="/home/$USER/Documents"
-SRC_PHONE_HOME="/home/$USER/Phone/IPhone"
+USER_="<USER>"
+SRC_LAPTOP_HOME="/home/$USER_/Documents"
+SRC_PHONE_HOME="/home/$USER_/Phone/IPhone"
 DEST="/media/Other_Backup"
-LOGS="/home/$USER/Logs"
+LOGS="/home/$USER_/Logs"
 
 echo "Backup of laptop and phone started"
 echo ""
@@ -75,15 +76,15 @@ if [[ $BACK_TYPE_ == "daily" ]]; then
     echo ""
 fi
 
-echo "Sync Primary and Secondary Hardrive started"
-echo ""
+# echo "Sync Primary and Secondary Hardrive started"
+# echo ""
 
-# Sync Second Hard Disk with Primary Hard Disk
-SRC_SYNC="/media/Other_Backup"
-DEST_SYNC="/media/BackUp/"
-SyncHDs.sh -s "$SRC_SYNC" -d "$DEST_SYNC" > "$LOGS/SyncHDs.log"
+# # Sync Second Hard Disk with Primary Hard Disk
+# SRC_SYNC="/media/Other_Backup"
+# DEST_SYNC="/media/BackUp/"
+# SyncHDs.sh -s "$SRC_SYNC" -d "$DEST_SYNC" > "$LOGS/SyncHDs.log"
 
-echo "Sync Primary and Secondary Hardrive ended"
+# echo "Sync Primary and Secondary Hardrive ended"
 
 DURATION_=$[ $(date +%s) - ${START_}]
 echo ""
