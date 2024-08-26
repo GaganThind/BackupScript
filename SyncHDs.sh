@@ -36,4 +36,4 @@ fi
 # If the provided Source does not end with slash (/), then append it with slash (/)
 SOURCE=$(echo "$SRC" | sed '/\/$/! s|$|/|')
 
-rsync -ahvAE --delete --exclude '*.Trash-1000' --stats "$SOURCE" "$DEST"
+rsync -ahvAE --delete --delete-excluded --exclude '*.Trash-1000' --exclude 'lost+found' --stats "$SOURCE" "$DEST"
