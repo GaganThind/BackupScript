@@ -49,42 +49,61 @@ echo ""
 
 # Copy Laptop and Phone data to backup directory except photos
 USER_="<USER>"
-SRC_LAPTOP_HOME="/home/$USER_/Documents"
-SRC_PHONE_HOME="/home/$USER_/Phone/IPhone"
 DEST="/media/Other_Backup"
 LOGS="/home/$USER_/Logs"
 
-echo "Backup of laptop and phone started"
+if ! [[ -d "$DEST" ]]; then
+    echo "$DEST does not exist or is empty. Exiting..."
+    exit 0;
+fi
+
+SRC_LAPTOP_HOME="/home/$USER_/Documents"
+
+echo "Backup of laptop started"
+echo ""
+/opt/Scripts/Backup.sh -n laptop -t "$BACK_TYPE_" -s "$SRC_LAPTOP_HOME" -d "$DEST" > "$LOGS/Other_Backup_Logs_Laptop_$BACK_TYPE_.log"
+echo "Backup of laptop done"
 echo ""
 
-Backup.sh -g laptop -t "$BACK_TYPE_" -e DCIM -s "$SRC_LAPTOP_HOME" -d "$DEST" > "$LOGS/Other_Backup_Logs_Laptop_$BACK_TYPE_.log"
-Backup.sh -g phone -t "$BACK_TYPE_" -e DCIM -s "$SRC_PHONE_HOME" -d "$DEST" > "$LOGS/Other_Backup_Logs_Phone_$BACK_TYPE_.log"
+SRC_PHONE_HOME="/home/$USER_/Phone"
+PHONE_1="I-Phone"
 
-echo "Backup of laptop and phone done"
+echo "Backup of phone(s) started"
 echo ""
+echo "Backup of $PHONE_1 started"
+echo ""
+
+/opt/Scripts/Backup.sh -n $PHONE_1 -t "$BACK_TYPE_" -e DCIM,com.whatsapp -s "$SRC_PHONE_HOME/$PHONE_1" -d "$DEST" > "$LOGS/Other_Backup_Logs_$PHONE_1$BACK_TYPE_.log"
 
 # Copy photos to different directory. We just want to copy all the photos.
 if [[ $BACK_TYPE_ == "daily" ]]; then
-    echo "Backup of phone photos started"
+    echo "Backup of $PHONE_1 photos started"
     echo ""
-
-    SRC_PHONE_PHOTOS="$SRC_PHONE_HOME/DCIM"
-    DEST_PHONE_PHOTOS="$DEST/Backups/IPhone_DCIM"
-    rsync -aAX "$SRC_PHONE_PHOTOS" "$DEST_PHONE_PHOTOS"
-
-    echo "Backup of phone photos done"
+    rsync -aAX --include 'DCIM' --include 'com.whatsapp' --exclude="*" "$SRC_PHONE_HOME/$PHONE_1" "$DEST/Backups" >> "$LOGS/Other_Backup_Logs_$PHONE_1$BACK_TYPE_.log"
+    echo "Backup of $PHONE_1 photos done"
     echo ""
 fi
+echo "Backup of $PHONE_1 done"
+echo ""
 
-# echo "Sync Primary and Secondary Hardrive started"
-# echo ""
+echo "Backup of phone(s) done"
+echo ""
 
-# # Sync Second Hard Disk with Primary Hard Disk
-# SRC_SYNC="/media/Other_Backup"
-# DEST_SYNC="/media/BackUp/"
-# SyncHDs.sh -s "$SRC_SYNC" -d "$DEST_SYNC" > "$LOGS/SyncHDs.log"
+echo "Sync Primary and Secondary Hardrive started"
+echo ""
 
-# echo "Sync Primary and Secondary Hardrive ended"
+# Sync Second Hard Disk with Primary Hard Disk
+SRC_SYNC="/media/Other_Backup"
+DEST_SYNC="/media/OldBackup/"
+
+if ! [[ -d "$DEST_SYNC" ]]; then
+    echo "$DEST_SYNC does not exist or is empty. Exiting..."
+    exit 0;
+fi
+
+/opt/Scripts/SyncHDs.sh -s "$SRC_SYNC" -d "$DEST_SYNC" > "$LOGS/SyncHDs.log"
+
+echo "Sync Primary and Secondary Hardrive ended"
 
 DURATION_=$[ $(date +%s) - ${START_}]
 echo ""
