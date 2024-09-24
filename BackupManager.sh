@@ -79,7 +79,7 @@ echo ""
 if [[ $BACK_TYPE_ == "daily" ]]; then
     echo "Backup of $PHONE_1 photos started"
     echo ""
-    rsync -aAX --include 'DCIM' --include 'com.whatsapp' --exclude="*" "$SRC_PHONE_HOME/$PHONE_1" "$DEST/Backups" >> "$LOGS/Other_Backup_Logs_$PHONE_1$BACK_TYPE_.log"
+    rsync -aAX --include="DCIM" --include="DCIM/**" --include="com.whatsapp" --include="com.whatsapp/**" --exclude="*" "$SRC_PHONE_HOME/$PHONE_1/" "$DEST/Backups/$PHONE_1"
     echo "Backup of $PHONE_1 photos done"
     echo ""
 fi
